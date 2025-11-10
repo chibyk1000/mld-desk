@@ -1,14 +1,15 @@
-name: Tauri Build
+name: Tauri Release Build
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - "v*"   # example: v1.0.0 creates a release
 
 jobs:
-  tauri-build:
+  build:
     strategy:
       matrix:
-        platform: [ macos-latest, windows-latest ]
+        platform: [macos-latest, windows-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -23,7 +24,7 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install frontend deps
+      - name: Install frontend dependencies
         run: npm install
 
       - name: Install Tauri CLI
@@ -32,10 +33,26 @@ jobs:
       - name: Build Tauri app
         run: npm run tauri build
 
-      - name: Upload build artifacts
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tauri-${{ matrix.platform }}
           path: |
             src-tauri/target/release/**/*
             src-tauri/target/**/bundle/**/*
+  
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

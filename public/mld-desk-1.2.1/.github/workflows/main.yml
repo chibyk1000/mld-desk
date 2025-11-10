@@ -43,6 +43,11 @@ jobs:
       - name: Create GitHub Release & Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*   # points to downloaded build files
+          files: |
+            # macOS builds
+            src-tauri/target/release/bundle/macos/*.dmg
+            src-tauri/target/release/bundle/macos/*.app
+            # Windows builds
+            src-tauri/target/release/bundle/windows/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}

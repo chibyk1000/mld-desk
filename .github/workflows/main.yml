@@ -39,10 +39,24 @@ jobs:
       - name: Build Tauri app
         run: npm run tauri build
 
+        
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-${{ matrix.platform }}
+          path: |
+            src-tauri/target/release/**/*
+            src-tauri/target/**/bundle/**/*
+
       # 7️⃣ Upload final packaged binaries as release assets
       - name: Create GitHub Release & Upload Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*   # points to downloaded build files
+          files: |
+            # macOS builds
+            src-tauri/target/release/bundle/macos/*.dmg
+            src-tauri/target/release/bundle/macos/*.app
+            # Windows builds
+            src-tauri/target/release/bundle/windows/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
